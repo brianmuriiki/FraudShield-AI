@@ -1,0 +1,10 @@
+{
+  "description": "Monitor payment transactions, investigate suspicious activity, and track fraud trends with AI-powered insights for financial institutions and fintech teams.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
