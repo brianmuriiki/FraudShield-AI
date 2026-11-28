@@ -1,0 +1,19 @@
+# Exact tested direct versions; the full transitive graph is in requirements.lock.
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.4
+pydantic-settings==2.16.3
+SQLAlchemy==2.0.58
+psycopg[binary]==3.3.9
+alembic==1.20.1
+python-multipart==0.0.34
+PyJWT==2.15.1
+bcrypt==5.0.0
+pandas==3.1.1
+numpy==2.5.5
+scikit-learn==1.9.1
+xgboost==3.4.1
+shap==0.54.1
+joblib==1.6.0
+pytest==9.2.0
+httpx==0.29.0

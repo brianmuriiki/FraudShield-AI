@@ -1,6 +1,8 @@
 # FraudShield frontend API integration
 
-The browser API client is in `src/api.ts`. Set `VITE_API_BASE_URL` to the FastAPI origin; when omitted, requests use the current origin. The client prefixes routes with `/api/v1` and returns API errors to the page for display.
+The browser API client is in `src/api.ts`. Set `VITE_API_BASE_URL` to the FastAPI origin, with or without `/api/v1`; when omitted, requests use the current origin. The client normalizes the base path and returns API errors to the page for display. Login uses the backend bearer-token endpoint; the token is held in memory and discarded on sign out or page reload.
+
+For local development, copy `.env.example` to `.env.local` so Vite sends requests to the backend on port 8000. The backend must separately be configured and started as described in `../backend/README.md`.
 
 ## Prediction request
 
@@ -20,6 +22,12 @@ The browser API client is in `src/api.ts`. Set `VITE_API_BASE_URL` to the FastAP
 }
 ```
 
-The five type fields are one-hot encoded and exactly one must be `1`. The current UI validates non-negative amount and balances and a non-negative whole-number step. A successful response must include `risk_score` as a finite number from 0 through 1. Optional fields are `threshold`, `prediction`, `status`, `transaction_id`, and SHAP `explanation` entries (`feature`, `value`, `contribution`, optional `relative_influence`). The UI defaults the threshold to `0.468` and flags scores greater than or equal to it as suspicious.
+The five type fields are one-hot encoded and exactly one must be `1`. The backend maps those inputs to the selected supported type and reconstructs the model frame in canonical order. The current UI validates non-negative amount and balances and a non-negative whole-number step. The backend prediction response includes `fraud_score` (finite, in `[0, 1]`), `threshold`, `prediction`, `transaction_id`, and related model fields. The UI applies the returned threshold (the configured value is `0.468`). It requests a stored explanation from `GET /api/v1/predictions/explain/{transaction_id}`; the backend returns SHAP `features` with contribution, influence, and description. If SHAP is unavailable, a successful prediction remains visible with the explanation unavailable state.
 
-The API module also defines the proposed transaction, dashboard, model metadata, SHAP explanation, and investigation routes so their contracts can be adjusted as the FastAPI implementation is finalized. Pages without a live backend data contract currently display unavailable states; retained dashboard and transaction examples are explicitly marked as demonstration data.
+The frontend uses implemented endpoints for transaction search/detail, dashboard totals, investigation creation/assignment/status/outcomes/notes/history, analytics date ranges, CSV export, model metadata, and administrator user listing/creation/role changes/deactivation/audit logs. Role restrictions are enforced by the backend; navigation hides pages that the signed-in role cannot use but is not an authorization boundary.
+
+## Production build and response headers
+
+Set `VITE_API_BASE_URL` at build time to the API origin (or same-origin reverse-proxy path). The reverse-proxy example is `../deploy/nginx.conf.template`; render it with the provider host, certificate paths, and API origin. The frontend security headers must be set by that hosting layer because the backend API CSP does not cover `index.html` or static assets.
+
+CSV reports download from `/api/v1/reports/export`. PDF is not implemented. Model intelligence displays metrics only when present in loaded model metadata and labels them as offline; it does not report live drift monitoring.
